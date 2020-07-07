@@ -5,14 +5,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Apk Details</title>
+    <link rel="shortcut icon" href="favicon.ico" />
+
     <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css">
     <script src="node_modules/axios/dist/axios.min.js"></script>
     <script src="node_modules/vue/dist/vue.js"></script>
     <style>
-        .apk-details-list {}
+        .apk-details-list {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: wrap;
+        }
 
-        .apk-details-list>div {
-            border-bottom: solid black 1px;
+        .apk-details-list>li {
+            flex: 1 0 50%;
+            max-width: 100%;
+        }
+
+        .apk-details-list>li:first-child {
+            flex: 1 0 100% !important;
         }
 
         .apk-details-list>div p {
@@ -27,7 +38,6 @@
         <div class="row">
             <div class="col-md-8 offset-md-2">
                 <h1>Apk Details</h1>
-
                 <hr />
                 <form @submit.prevent="onSubmitApk($event)">
                     <div class="form-row">
@@ -38,7 +48,7 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-6 offset-6">
-                            <button class="btn btn-block btn-primary" type="submit" :disabled="loadingApk || !apkFile">
+                            <button class="btn btn-block btn-primary" type="submit" :disabled="loadingApk || loadingPackage || !apkFile">
                                 <template v-if="loadingApk">
                                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                     Loading...
@@ -57,73 +67,95 @@
                             </div>
                         </div>
                     </div>
-                    <div class="form-row" v-if="errorMessage">
-                        <div class="form-group col-md-12">
-                            <div class="alert alert-danger">
-                                {{errorMessage}}
-                            </div>
+
+                </form>
+                <hr />
+                <form @submit.prevent="onSubmitPackage($event)">
+                    <div class="form-row">
+                        <label for="package" class="form-group col-md-12 font-weight-bolder">Package</label>
+                        <div class="form-group col-md-9">
+                            <input type="text" id="package" placeholder="Package" class="form-control" v-model="strPackage" />
+                        </div>
+                        <div class="form-group col-md-3">
+                            <button type="submit" class="btn btn-primary btn-block" :disabled="loadingApk || loadingPackage || !strPackage">
+                                <template v-if="loadingPackage">
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    Loading...
+                                </template>
+                                <template v-else>
+                                    Send
+                                </template>
+
+                            </button>
                         </div>
                     </div>
                 </form>
-
-                <div v-if="apkDetails" class="apk-details-list row">
-                    <div class="col-md-12 pb-1">
-                        <img :src="apkDetails.appIcon || 'assets/images/image404.png'" :title="apkDetails.appName" class="mw-100">
-
+                <div class="row my-2" v-if="errorMessage">
+                    <div class="col-md-12">
+                        <div class="alert alert-danger">
+                            {{errorMessage}}
+                        </div>
                     </div>
-                    <div class="col-md-6">
+                </div>
+                <hr />
+                <ul v-if="apkDetails" class="apk-details-list list-group list-group-flush ">
+
+                    <li class="list-group-item">
+                        <img :src="apkDetails.appIcon || 'assets/images/image404.png'" :title="apkDetails.appName" class="mw-100">
+                    </li>
+                    <li class="list-group-item">
                         <h5>Name</h5>
                         <p>{{apkDetails.appName}}</p>
-                    </div>
-                    <div class="col-md-6">
+                    </li>
+                    <li class="list-group-item">
                         <h5>Package</h5>
                         <p>{{apkDetails.packageName}}</p>
-                    </div>
-                    <div class="col-md-6">
+                    </li>
+                    <li class="list-group-item">
                         <h5>Version</h5>
                         <p>{{apkDetails.version}}</p>
-                    </div>
-                    <div class="col-md-6">
+                    </li>
+                    <li class="list-group-item">
                         <h5>Size</h5>
                         <p>{{apkDetails.size}}MB</p>
-                    </div>
-                    <div class="col-md-6" v-if="apkDetails.urlApk">
+                    </li>
+                    <li class="list-group-item" v-if="apkDetails.urlApk">
                         <h5>Url Apk</h5>
                         <p>
                             <a :href="apkDetails.urlApk" target="_blank">Download</a>
                         </p>
-                    </div>
-                    <div class="col-md-6">
+                    </li>
+                    <li class="list-group-item">
                         <h5>Unity Version</h5>
                         <p v-if="apkDetails.unityVersion === ''">Version not found</p>
                         <p v-else-if="apkDetails.unityVersion === null">It's not a Unity App</p>
                         <p v-else>{{apkDetails.unityVersion}}</p>
-                    </div>
-                    <div class="col-md-6" v-if="apkDetails.unityTechnology">
+                    </li>
+                    <li class="list-group-item" v-if="apkDetails.unityTechnology">
                         <h5>Unity Technology</h5>
                         <p>{{apkDetails.unityTechnology}}</p>
-                    </div>
-                    <div class="col-md-6">
+                    </li>
+                    <li class="list-group-item">
                         <h5>Data Directory</h5>
                         <p>{{apkDetails.dataDir}}</p>
-                    </div>
-                    <div class="col-md-6">
+                    </li>
+                    <li class="list-group-item">
                         <h5>Sdk Version</h5>
                         <p>{{apkDetails.sdkVersion}}</p>
-                    </div>
-                    <div class="col-md-6">
+                    </li>
+                    <li class="list-group-item">
                         <h5>Target Sdk Version</h5>
                         <p>{{apkDetails.targetSdkVersion}}</p>
-                    </div>
-                    <div class="col-md-6" v-if="apkDetails.usesPermission">
+                    </li>
+                    <li class="list-group-item" v-if="apkDetails.usesPermission">
                         <h5>Uses Permissions</h5>
 
                         <div class="small text-wrap" style="word-wrap: break-word;" v-for="item in apkDetails.usesPermission">
                             {{item}}
                         </div>
 
-                    </div>
-                </div>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
@@ -135,7 +167,9 @@
                 apkFile: null,
                 apkDetails: null,
                 loadingApk: false,
-                errorMessage: null
+                errorMessage: null,
+                strPackage: null,
+                loadingPackage: false
             },
             methods: {
                 onFileApkChange(e) {
@@ -147,9 +181,41 @@
                     // }
 
                 },
+                onSubmitPackage(f) {
+                    if (this.loadingPackage || this.loadingApk) return false;
+                    this.loadingPackage = true;
+                    console.log(f);
+                    this.apkDetails = null;
+                    this.errorMessage = null;
+                    axios.get('upload_file.php?package=' + this.strPackage)
+                        .then((response) => {
+                            console.log(response);
+                            this.apkDetails = response.data;
+
+                            this.apkDetails.size = ((parseFloat(this.apkDetails.size) || 0) / 1024 / 1024).toFixed(2);
+
+                            console.log(this.apkDetails);
+                            this.loadingPackage = false;
+                        })
+                        .catch(err => {
+                            let error = err.toJSON();
+                            console.log({
+                                error: err
+                            });
+                            this.loadingPackage = false;
+                            if (err.response && err.response.status === 400) {
+                                this.errorMessage = err.response.data.message || "The Server was unable to resolve.";
+                            } else if (!!error.message.match(/network\ error/i)) {
+                                this.errorMessage = "The device is offline";
+                            } else {
+                                this.errorMessage = "The Server was unable to resolve.";
+                            }
+                        });
+
+                },
                 onSubmitApk(f) {
                     this.errorMessage = null;
-                    if (this.loadingApk) return false;
+                    if (this.loadingPackage || this.loadingApk) return false;
                     this.loadingApk = {
                         progress: 0
                     };
