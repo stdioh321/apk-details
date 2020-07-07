@@ -21,7 +21,8 @@ RUN apt-get update \
     && apt-get install -y php \
     && cp /app/php.ini /etc/php/7.4/cli/ \
     && cp /app/php.ini /etc/php/7.4/apache2/ \
-    && apt-get install -y php-xml
+    && apt-get install -y php-xml \
+    && mkdir /app/downloads
 
 CMD php -S 0.0.0.0:$PORT
 

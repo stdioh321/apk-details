@@ -116,6 +116,11 @@ try {
         header('Content-type: application/json');
         echo json_encode($apk);
         unlink($apkFile);
+    } else {
+        http_response_code(400);
+        echo json_encode(["message" => "Apk is missing"]);
+        unlink($apkFile);
+        return;
     }
 } catch (\Throwable $th) {
     http_response_code(500);
