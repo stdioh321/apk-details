@@ -25,7 +25,7 @@
     <div id="app" class="container">
 
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-8 offset-md-2">
                 <h1>Apk Details</h1>
 
                 <hr />
@@ -65,57 +65,57 @@
                         </div>
                     </div>
                 </form>
-            </div>
-            <div class="col-md-6 pt-1">
-                <div v-if="apkDetails" class="apk-details-list">
-                    <div class="pb-1">
-                        <img :src="apkDetails.appIcon || 'assets/images/image404.png'" :title="apkDetails.appName" class="img-responsive">
+
+                <div v-if="apkDetails" class="apk-details-list row">
+                    <div class="col-md-12 pb-1">
+                        <img :src="apkDetails.appIcon || 'assets/images/image404.png'" :title="apkDetails.appName" class="mw-100">
+
                     </div>
-                    <div>
+                    <div class="col-md-6">
                         <h5>Name</h5>
                         <p>{{apkDetails.appName}}</p>
                     </div>
-                    <div>
+                    <div class="col-md-6">
                         <h5>Package</h5>
                         <p>{{apkDetails.packageName}}</p>
                     </div>
-                    <div>
+                    <div class="col-md-6">
                         <h5>Version</h5>
                         <p>{{apkDetails.version}}</p>
                     </div>
-                    <div>
+                    <div class="col-md-6">
                         <h5>Size</h5>
                         <p>{{apkDetails.size}}MB</p>
                     </div>
-                    <div v-if="apkDetails.urlApk">
+                    <div class="col-md-6" v-if="apkDetails.urlApk">
                         <h5>Url Apk</h5>
                         <p>
                             <a :href="apkDetails.urlApk" target="_blank">Download</a>
                         </p>
                     </div>
-                    <div>
+                    <div class="col-md-6">
                         <h5>Unity Version</h5>
                         <p v-if="apkDetails.unityVersion === ''">Version not found</p>
                         <p v-else-if="apkDetails.unityVersion === null">It's not a Unity App</p>
                         <p v-else>{{apkDetails.unityVersion}}</p>
                     </div>
-                    <div v-if="apkDetails.unityTechnology">
+                    <div class="col-md-6" v-if="apkDetails.unityTechnology">
                         <h5>Unity Technology</h5>
                         <p>{{apkDetails.unityTechnology}}</p>
                     </div>
-                    <div>
+                    <div class="col-md-6">
                         <h5>Data Directory</h5>
                         <p>{{apkDetails.dataDir}}</p>
                     </div>
-                    <div>
+                    <div class="col-md-6">
                         <h5>Sdk Version</h5>
                         <p>{{apkDetails.sdkVersion}}</p>
                     </div>
-                    <div>
+                    <div class="col-md-6">
                         <h5>Target Sdk Version</h5>
                         <p>{{apkDetails.targetSdkVersion}}</p>
                     </div>
-                    <div v-if="apkDetails.usesPermission">
+                    <div class="col-md-6" v-if="apkDetails.usesPermission">
                         <h5>Uses Permissions</h5>
 
                         <div class="small text-wrap" style="word-wrap: break-word;" v-for="item in apkDetails.usesPermission">
