@@ -15,6 +15,7 @@ RUN apt-get update \
     && echo "deb http://ppa.launchpad.net/openjdk-r/ppa/ubuntu focal main deb-src http://ppa.launchpad.net/openjdk-r/ppa/ubuntu focal main" >> /etc/apt/source.list \
     && apt-get update \
     && apt-get install -y openjdk-8-jdk \
+    && apt-get install -y wget \
     && apt-get install -y adb \
     && apt-get install -y aapt \
     && apt-get install -y unzip \
