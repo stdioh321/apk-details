@@ -55,7 +55,7 @@ try {
         preg_match("/package: name=\'([\w\d\.]+)/i", shell_exec("aapt d badging " . $apkFile), $tmp);
         $apk['packageName'] = isset($tmp[1]) ? $tmp[1] : null;
 
-        preg_match("/application: label=\'([\w\d\. ]+)/i", shell_exec("aapt d badging " . $apkFile), $tmp);
+        preg_match("/application: label=\'(.+)\' /i", shell_exec("aapt d badging " . $apkFile), $tmp);
         $apk['appName'] =  isset($tmp[1]) ? $tmp[1] : null;
 
         preg_match("/versionName=\'([\w\d\.]+)/i", shell_exec("aapt d badging " . $apkFile), $tmp);
