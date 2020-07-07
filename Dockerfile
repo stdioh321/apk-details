@@ -16,6 +16,7 @@ RUN apt-get update \
     && apt-get update \
     && apt-get install -y openjdk-8-jdk \
     && apt-get install -y wget \
+    && apt-get install -y curl \
     && apt-get install -y adb \
     && apt-get install -y aapt \
     && apt-get install -y unzip \
