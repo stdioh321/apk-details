@@ -187,7 +187,14 @@
                     console.log(f);
                     this.apkDetails = null;
                     this.errorMessage = null;
-                    axios.get('upload_file.php?package=' + this.strPackage)
+                    axios.get('upload_file.php?package=' + this.strPackage, {
+                            onUploadProgress: (progressEvent) => {
+                                // console.log(progressEvent);
+                                // if (this.loadingApk) {
+                                //     this.loadingApk.progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+                                // }
+                            }
+                        })
                         .then((response) => {
                             console.log(response);
                             this.apkDetails = response.data;

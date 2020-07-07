@@ -1,5 +1,5 @@
 <?php
-$urlDownloadApk = "https://m.apkpure.com/android/%s/download?from=details";
+$baseUrl = "https://m.apkpure.com/android/%s/download?from=details";
 $apkFile = null;
 try {
     // error_reporting(0);
@@ -7,19 +7,15 @@ try {
 
 
     if (isset($_GET['package'])) {
-        $tmpUrl = sprintf($urlDownloadApk, $_GET['package']);
-        $tmpHeaders = @get_headers($tmpUrl);
+        $apkUrl = getApkUrl(sprintf($baseUrl, $_GET['package']));
 
-        if ($tmpHeaders && strpos($tmpHeaders[0], '301')) {
-            $dom = new DOMDocument();
-            libxml_use_internal_errors(true);
-            $dom->loadHTMLFile($tmpUrl);
-            $apkUrl = $dom->getElementsByTagName("iframe")[0]->getAttribute('src');
-            $apkFile = __DIR__ . "/downloads/" . time();
-            downloadFile($apkUrl, $apkFile);
+        if ($apkUrl) {
+            $apkFile = __DIR__ . "/downloads/tmp_" . time();
+            file_put_contents($apkFile, file_get_contents($apkUrl['url']));
         } else {
             http_response_code(400);
-            echo json_encode(['message' => "Apk not found."]);
+            echo json_encode(["message" => "Apk no found"]);
+            unlink($apkFile);
             return;
         }
     } else if (isset($_FILES['apk'])) {
@@ -108,7 +104,7 @@ try {
         } else {
             $apk['unityVersion'] = null;
         }
-        $urlApk = sprintf($urlDownloadApk, $apk['packageName']);
+        $urlApk = sprintf($baseUrl, $apk['packageName']);
         $tmpHeaders = @get_headers($urlApk);
         if ($tmpHeaders && strpos($tmpHeaders[0], '301')) {
             $apk["urlApk"] = $urlApk;
@@ -163,5 +159,64 @@ function downloadFile($url, $path)
     }
     if ($newf) {
         fclose($newf);
+    }
+}
+
+
+
+
+function getApkUrl($url = "")
+{
+    try {
+        $tmpHeaders = @get_headers($url);
+        if ($tmpHeaders && strpos($tmpHeaders[0], "301")) {
+            $dom = new DOMDocument();
+            libxml_use_internal_errors(true);
+            $dom->loadHTMLFile($url);
+            $apkUrl = $dom->getElementsByTagName("iframe")[0]->getAttribute('src');
+            $tmpHeaders = @get_headers($apkUrl);
+
+            if ($tmpHeaders && strpos($tmpHeaders[0], "302")) {
+                $m = null;
+
+                foreach ($tmpHeaders as $tmp) {
+                    if (preg_match("/location: (http.*)/i", $tmp, $m)) {
+                        $m = count($m) > 1 ? $m[1] : null;
+                        break;
+                    }
+                }
+                if ($m) {
+                    $tmpHeaders = @get_headers($m);
+                    if ($tmpHeaders && strpos($tmpHeaders[0], "200")) {
+                        $file = [
+                            "url" => $m,
+                            "type" => null,
+                            "filename" => null
+                        ];
+                        foreach ($tmpHeaders as $header) {
+                            if (preg_match("/Content-Type: (.*)/i", $header, $tmp)) {
+                                $tmp = count($tmp) > 1 ? $tmp[1] : null;
+                                $file['type'] = $tmp;
+                            }
+                            if (preg_match("/filename=\"(.*)\"/i", $header, $tmp)) {
+                                $tmp = count($tmp) > 1 ? $tmp[1] : null;
+                                $file['filename'] = $tmp;
+                            }
+                        }
+                        return $file;
+                    } else {
+                        return null;
+                    }
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    } catch (\Throwable $th) {
+        return null;
     }
 }
