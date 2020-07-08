@@ -1,10 +1,11 @@
 <?php
-$baseUrl = "https://m.apkpure.com/android/%s/download?from=details";
+$baseUrlPure = "https://m.apkpure.com/android/%s/download?from=details";
+$baseUrlCombo = "https://apkcombo.com/pt-br/%s/download/apk";
 $apkFile = null;
 
 try {
-    // error_reporting(0);
-    // ini_set('display_errors', 0);
+    error_reporting(0);
+    ini_set('display_errors', 0);
 
 
     if (isset($_GET['package'])) {
@@ -23,7 +24,7 @@ try {
         $apkFile = $_FILES['apk']['tmp_name'];
     } else {
         http_response_code(400);
-        echo json_encode(["message" => "Apk is missing"]);
+        echo json_encode(["message" => "Missing parameters"]);
         unlink($apkFile);
         return;
     }
@@ -31,9 +32,39 @@ try {
     if (is_file($apkFile)) {
         exec("aapt d badging " . $apkFile, $out, $ret);
         if ($ret != 0) {
-            http_response_code(400);
-            echo json_encode(["message" => "It is no Android Apk"]);
-            return;
+            exec("unzip -l " . $apkFile . " | grep -i '.apk'", $out, $ret);
+            if ($ret == 0) {
+                exec("unzip -oj " . $apkFile . " -d " . __DIR__ . "/downloads/tmp/", $out, $ret);
+                $dir = scandir(__DIR__ . "/downloads/tmp/");
+                $tmpApk = null;
+                foreach ($dir as $f) {
+                    if (preg_match("/\.apk$/i", $f, $tmp)) {
+                        $tmpApk = __DIR__ . "/downloads/tmp/" . $f;
+                        break;
+                    }
+                }
+                if ($tmpApk) {
+                    preg_match("/package: name=\'([\w\d\.]+)/i", shell_exec("aapt d badging " . $tmpApk), $tmp);
+                    $tmpApk = isset($tmp[1]) ? $tmp[1] : null;
+                    $tmpApk = $tmpApk ? __DIR__ . "/downloads/tmp/" . $tmpApk . ".apk" : null;
+                    // print_r($tmpApk);
+                    if (is_file($tmpApk)) {
+                        $apkFile = $tmpApk;
+                    } else {
+                        http_response_code(400);
+                        echo json_encode(["message" => "It is not Android Apk"]);
+                        return;
+                    }
+                } else {
+                    http_response_code(400);
+                    echo json_encode(["message" => "It is not Android Apk"]);
+                    return;
+                }
+            } else {
+                http_response_code(400);
+                echo json_encode(["message" => "It is not Android Apk"]);
+                return;
+            }
         }
 
 
@@ -105,7 +136,7 @@ try {
         } else {
             $apk['unityVersion'] = null;
         }
-        $urlApk = sprintf($baseUrl, $apk['packageName']);
+        $urlApk = sprintf($baseUrlPure, $apk['packageName']);
         $tmpHeaders = @get_headers($urlApk);
         if ($tmpHeaders && strpos($tmpHeaders[0], '301')) {
             $apk["urlApk"] = $urlApk;
@@ -115,7 +146,7 @@ try {
         unlink($apkFile);
     } else {
         http_response_code(400);
-        echo json_encode(["message" => "Apk is missing"]);
+        echo json_encode(["message" => "It was not possible to get the Apk"]);
         unlink($apkFile);
         return;
     }
@@ -166,9 +197,11 @@ function downloadFile($url, $path)
 
 
 
-function getApkUrl($url = "")
+function getApkUrl($package = "")
 {
     try {
+        $baseUrl = "https://m.apkpure.com/android/%s/download?from=details";
+        $url =  sprintf($baseUrl, $package);
         $tmpHeaders = @get_headers($url);
         if ($tmpHeaders && strpos($tmpHeaders[0], "301")) {
             $dom = new DOMDocument();
