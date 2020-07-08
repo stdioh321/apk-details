@@ -4,8 +4,8 @@ $baseUrlCombo = "https://apkcombo.com/pt-br/%s/download/apk";
 $apkFile = null;
 
 try {
-    error_reporting(0);
-    ini_set('display_errors', 0);
+    // error_reporting(0);
+    // ini_set('display_errors', 0);
 
 
     if (isset($_GET['package'])) {
@@ -52,17 +52,17 @@ try {
                         $apkFile = $tmpApk;
                     } else {
                         http_response_code(400);
-                        echo json_encode(["message" => "It is not Android Apk"]);
+                        echo json_encode(["message" => "It is not Android Apk 1"]);
                         return;
                     }
                 } else {
                     http_response_code(400);
-                    echo json_encode(["message" => "It is not Android Apk"]);
+                    echo json_encode(["message" => "It is not Android Apk 2"]);
                     return;
                 }
             } else {
                 http_response_code(400);
-                echo json_encode(["message" => "It is not Android Apk"]);
+                echo json_encode(["message" => "It is not Android Apk 3"]);
                 return;
             }
         }
