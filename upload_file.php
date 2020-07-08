@@ -81,7 +81,8 @@ try {
             "sdkVersion" => null,
             "targetSdkVersion" => null,
             "usesPermission" => null,
-            "appIcon" => null
+            "appIcon" => null,
+            "urlApk" => []
         ];
         preg_match("/package: name=\'([\w\d\.]+)/i", shell_exec("aapt d badging " . $apkFile), $tmp);
         $apk['packageName'] = isset($tmp[1]) ? $tmp[1] : null;
@@ -136,11 +137,26 @@ try {
         } else {
             $apk['unityVersion'] = null;
         }
-        $urlApk = sprintf($baseUrlPure, $apk['packageName']);
-        $tmpHeaders = @get_headers($urlApk);
+
+        // if ($urlApk = getApkUrl($apk['packageName'])) {
+        //     array_push($apk["urlApk"], $urlApk['url']);
+        // }
+        // if ($urlApk = getApkUrlCombo($apk['packageName'])) {
+        //     array_push($apk["urlApk"], $urlApk['url']);
+        // }
+        $tmpHeaders = @get_headers(sprintf($baseUrlPure, $apk['packageName']));
         if ($tmpHeaders && strpos($tmpHeaders[0], '301')) {
-            $apk["urlApk"] = $urlApk;
+            array_push($apk['urlApk'], sprintf($baseUrlPure, $apk['packageName']));
         }
+        $out = shell_exec("curl -I " . sprintf($baseUrlCombo, $apk['packageName']));
+        $ret = preg_match("/HTTP\/2 200/i", $out);
+        
+        if (preg_match("/HTTP\/2 200/i", $out) == 0) {
+            array_push($apk['urlApk'], sprintf($baseUrlCombo, $apk['packageName']));
+        }
+
+
+
         header('Content-type: application/json');
         echo json_encode($apk);
         unlink($apkFile);

@@ -8,7 +8,7 @@
 
     <link rel="shortcut icon" href="favicon.ico" />
     <link rel="icon" type="image/png" href="favicon.png">
-    
+
     <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css">
     <script src="node_modules/axios/dist/axios.min.js"></script>
     <script src="node_modules/vue/dist/vue.js"></script>
@@ -123,9 +123,9 @@
                     </li>
                     <li class="list-group-item" v-if="apkDetails.urlApk">
                         <h5>Url Apk</h5>
-                        <p>
-                            <a :href="apkDetails.urlApk" target="_blank">Download</a>
-                        </p>
+                        <div v-for="url in apkDetails.urlApk">
+                            <a :href="url" target="_blank">Download</a>
+                        </div>
                     </li>
                     <li class="list-group-item">
                         <h5>Unity Version</h5>
