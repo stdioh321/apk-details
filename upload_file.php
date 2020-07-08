@@ -275,42 +275,51 @@ function getApkUrlCombo($package = "")
 {
     try {
         $host = "https://apkcombo.com";
-        $baseUrl = "https://apkcombo.com/pt-br/%s/download/apk";
+        $baseUrl = "https://apkcombo.com/us/%s/download/apk";
         $url = sprintf($baseUrl, $package);
+        preg_match("/href=\'(.+)\'/i", shell_exec("curl " . $url), $m);
         
-        if (preg_match("/href=\'(.+)\'/i", shell_exec("curl " . $url), $m)) {
-            
+        if ($m) {
+
             $m = count($m) > 1 ? $m[1] : null;
             
             if ($m) {
                 $m = $host . $m;
-                // print_r($m);
-                if (preg_match("/<a href=\"(.+)\" class=\"app\"/i", shell_exec("curl " . $m), $m)) {
-                    
+                preg_match("/<a href=[\"\'](.+)[\"\'] class=\"app\"/i", shell_exec("curl " . $m), $m);
+                
+                if ($m) {
+
                     $m = count($m) > 1 ? $m[1] : null;
                     if ($m) {
-                        $tmpHeaders = @get_headers($m);
-                        if ($tmpHeaders && strpos($tmpHeaders[0], "200")) {
-                            $file = [
-                                "url" => $m,
-                                "type" => null,
-                                "filename" => null
-                            ];
-                            // print_r($tmpHeaders);
-                            foreach ($tmpHeaders as $header) {
-                                if (preg_match("/Content-Type: (.*)/i", $header, $tmp)) {
-                                    $tmp = count($tmp) > 1 ? $tmp[1] : null;
-                                    $file['type'] = $tmp;
-                                }
-                                if (preg_match("/filename=\"(.*)\"/i", $header, $tmp)) {
-                                    $tmp = count($tmp) > 1 ? $tmp[1] : null;
-                                    $file['filename'] = $tmp;
-                                }
-                            }
-                            return $file;
-                        } else {
-                            return null;
-                        }
+                        
+                        $file = [
+                            "url" => $m,
+                            "type" => null,
+                            "filename" => null
+                        ];
+                        return $file;
+                        // $tmpHeaders = get_headers($m);
+                        // if ($tmpHeaders && strpos($tmpHeaders[0], "200")) {
+                        //     $file = [
+                        //         "url" => $m,
+                        //         "type" => null,
+                        //         "filename" => null
+                        //     ];
+                        //     // print_r($tmpHeaders);
+                        //     foreach ($tmpHeaders as $header) {
+                        //         if (preg_match("/Content-Type: (.*)/i", $header, $tmp)) {
+                        //             $tmp = count($tmp) > 1 ? $tmp[1] : null;
+                        //             $file['type'] = $tmp;
+                        //         }
+                        //         if (preg_match("/filename=\"(.*)\"/i", $header, $tmp)) {
+                        //             $tmp = count($tmp) > 1 ? $tmp[1] : null;
+                        //             $file['filename'] = $tmp;
+                        //         }
+                        //     }
+                        //     return $file;
+                        // } else {
+                        //     return null;
+                        // }
                     } else {
                         return null;
                     }
