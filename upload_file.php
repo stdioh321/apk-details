@@ -4,13 +4,14 @@ $baseUrlCombo = "https://apkcombo.com/pt-br/%s/download/apk";
 $apkFile = null;
 
 try {
-    // error_reporting(0);
-    // ini_set('display_errors', 0);
+    error_reporting(0);
+    ini_set('display_errors', 0);
 
 
     if (isset($_GET['package'])) {
-        $apkUrl = getApkUrlCombo($_GET['package']);
 
+        $apkUrl = getApkUrlCombo($_GET['package']);
+        // $apkUrl = $apkUrl ? $apkUrl : getApkUrl($_GET['package']);
         if ($apkUrl) {
             $apkFile = __DIR__ . "/downloads/tmp_" . time();
             file_put_contents($apkFile, file_get_contents($apkUrl['url']));
@@ -150,7 +151,7 @@ try {
         }
         $out = shell_exec("curl -I " . sprintf($baseUrlCombo, $apk['packageName']));
         $ret = preg_match("/HTTP\/2 200/i", $out);
-        
+
         if (preg_match("/HTTP\/2 200/i", $out) == 0) {
             array_push($apk['urlApk'], sprintf($baseUrlCombo, $apk['packageName']));
         }
@@ -276,11 +277,16 @@ function getApkUrlCombo($package = "")
         $host = "https://apkcombo.com";
         $baseUrl = "https://apkcombo.com/pt-br/%s/download/apk";
         $url = sprintf($baseUrl, $package);
+        
         if (preg_match("/href=\'(.+)\'/i", shell_exec("curl " . $url), $m)) {
+            
             $m = count($m) > 1 ? $m[1] : null;
+            
             if ($m) {
                 $m = $host . $m;
+                // print_r($m);
                 if (preg_match("/<a href=\"(.+)\" class=\"app\"/i", shell_exec("curl " . $m), $m)) {
+                    
                     $m = count($m) > 1 ? $m[1] : null;
                     if ($m) {
                         $tmpHeaders = @get_headers($m);

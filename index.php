@@ -9,9 +9,15 @@
     <link rel="shortcut icon" href="favicon.ico" />
     <link rel="icon" type="image/png" href="favicon.png">
 
+    <link rel="stylesheet" href="node_modules/vue-select/dist/vue-select.css">
     <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <script src="node_modules/underscore/underscore.js"></script>
     <script src="node_modules/axios/dist/axios.min.js"></script>
     <script src="node_modules/vue/dist/vue.js"></script>
+    <script src="node_modules/vuex/dist/vuex.min.js"></script>
+    <script src="node_modules/vue-select/dist/vue-select.js"></script>
+
+
     <style>
         .apk-details-list {
             display: flex !important;
@@ -30,6 +36,44 @@
 
         .apk-details-list>div p {
             /* word-wrap: break-word; */
+        }
+
+        .v-select-item-wrapper {
+            display: flex;
+            align-items: center;
+            max-width: 100%;
+            /* border: solid red 1px; */
+            /* overflow: scroll; */
+        }
+
+        .v-select-item-wrapper .item-img>img {
+            border: solid rgb(240, 240, 240) 1px;
+            border-radius: 5px;
+            max-width: 100%;
+        }
+
+        .v-select-item-wrapper .item-img {
+            max-width: 50px;
+
+        }
+
+        .v-select-item-wrapper .item-info {
+            /* display: flex;
+            flex-wrap: wrap;
+            flex-direction: column;
+            flex: 1; */
+
+            width: 100%;
+            max-width: 100%;
+            /* border: solid blue 1px; */
+        }
+
+        .v-select-item-wrapper .item-info>* {
+            display: block;
+            word-break: break-all;
+            width: 100%;
+            max-width: 100%;
+            /* border: solid blue 1px; */
         }
     </style>
 </head>
@@ -76,10 +120,29 @@
                     <div class="form-row">
                         <label for="package" class="form-group col-md-12 font-weight-bolder">Package</label>
                         <div class="form-group col-md-9">
-                            <input type="text" id="package" placeholder="Package" class="form-control" v-model="strPackage" />
+                            <!-- <input type="text" id="package" placeholder="Package" class="form-control" v-model="strPackage" /> -->
+                            <v-select id="package" taggable placeholder="App" v-model="appSelected" :options="appsOptions" label="name" @search="onAppSearch" @input="onAppChange" @search:blur="onSearchBlur">
+                                <template v-slot:option="option">
+                                    <div class="v-select-item-wrapper">
+                                        <div class="item-img">
+                                            <img :src="option.imgUrl || 'assets/images/image404.png'" alt="">
+                                        </div>
+                                        <div class="item-info pl-3">
+                                            <strong>{{ option.name }}</strong>
+                                            <small>{{ option.package }}</small>
+                                        </div>
+                                    </div>
+                                </template>
+                                <template v-slot:no-options="{ search, searching }">
+                                    <template v-if="searching">
+                                        No results found for <em>{{ search }}</em>.
+                                    </template>
+                                    <em style="opacity: 0.5;" v-else>Start typing to search for a app.</em>
+                                </template>
+                            </v-select>
                         </div>
                         <div class="form-group col-md-3">
-                            <button type="submit" class="btn btn-primary btn-block" :disabled="loadingApk || loadingPackage || !strPackage">
+                            <button type="submit" class="btn btn-primary btn-block" :disabled="loadingApk || loadingPackage || !appSelected  ">
                                 <template v-if="loadingPackage">
                                     <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                     Loading...
@@ -161,118 +224,7 @@
             </div>
         </div>
     </div>
-    <script>
-        var app = new Vue({
-            el: '#app',
-            data: {
-                message: "Hello",
-                apkFile: null,
-                apkDetails: null,
-                loadingApk: false,
-                errorMessage: null,
-                strPackage: null,
-                loadingPackage: false
-            },
-            methods: {
-                onFileApkChange(e) {
-                    this.apkFile = e.target.files[0];
-                    console.log(this.apkFile);
-                    // if (!this.apkFile.type.match(/application\/vnd.android.package-archive/i)) {
-                    //     this.apkFile = null;
-                    //     this.errorMessage = "The file must be a apk.";
-                    // }
-
-                },
-                onSubmitPackage(f) {
-                    if (this.loadingPackage || this.loadingApk) return false;
-                    this.loadingPackage = true;
-                    console.log(f);
-                    this.apkDetails = null;
-                    this.errorMessage = null;
-                    axios.get('upload_file.php?package=' + this.strPackage, {
-                            onUploadProgress: (progressEvent) => {
-                                // console.log(progressEvent);
-                                // if (this.loadingApk) {
-                                //     this.loadingApk.progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-                                // }
-                            }
-                        })
-                        .then((response) => {
-                            console.log(response);
-                            this.apkDetails = response.data;
-
-                            this.apkDetails.size = ((parseFloat(this.apkDetails.size) || 0) / 1024 / 1024).toFixed(2);
-
-                            console.log(this.apkDetails);
-                            this.loadingPackage = false;
-                        })
-                        .catch(err => {
-                            let error = err.toJSON();
-                            console.log({
-                                error: err
-                            });
-                            this.loadingPackage = false;
-                            if (err.response && err.response.status === 400) {
-                                this.errorMessage = err.response.data.message || "The Server was unable to resolve.";
-                            } else if (!!error.message.match(/network\ error/i)) {
-                                this.errorMessage = "The device is offline";
-                            } else {
-                                this.errorMessage = "The Server was unable to resolve.";
-                            }
-                        });
-
-                },
-                onSubmitApk(f) {
-                    this.errorMessage = null;
-                    if (this.loadingPackage || this.loadingApk) return false;
-                    this.loadingApk = {
-                        progress: 0
-                    };
-                    this.apkDetails = null;
-                    let fData = new FormData();
-                    let tmpFile = f.target.apk.files[0];
-                    if (!tmpFile) return false;
-                    fData.append('apk', tmpFile);
-                    axios.post('upload_file.php',
-                            fData, {
-                                headers: {
-                                    'Content-Type': 'multipart/form-data'
-                                },
-                                onUploadProgress: (progressEvent) => {
-                                    // console.log(progressEvent);
-                                    if (this.loadingApk) {
-                                        this.loadingApk.progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-                                    }
-                                }
-                            }
-                        ).then((response) => {
-                            console.log(response);
-                            this.apkDetails = response.data;
-
-                            this.apkDetails.size = ((parseFloat(this.apkDetails.size) || 0) / 1024 / 1024).toFixed(2);
-
-                            console.log(this.apkDetails);
-                            f.target.apk.value = null;
-                            this.apkFile = null;
-                            this.loadingApk = false;
-                        })
-                        .catch(err => {
-                            let error = err.toJSON();
-                            console.log({
-                                error: err
-                            });
-                            this.loadingApk = false;
-                            if (err.response && err.response.status === 400) {
-                                this.errorMessage = err.response.data.message || "The Server was unable to resolve.";
-                            } else if (!!error.message.match(/network\ error/i)) {
-                                this.errorMessage = "The device is offline";
-                            } else {
-                                this.errorMessage = "The Server was unable to resolve.";
-                            }
-                        });
-                }
-            }
-        })
+    <script src="index.js">
     </script>
 </body>
 
