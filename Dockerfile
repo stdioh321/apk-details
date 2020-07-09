@@ -3,11 +3,11 @@ FROM ubuntu:20.04
 
 
 
-ADD . /app
+ADD . /var/www/html/
 
-WORKDIR /app
+WORKDIR /var/www/html/
 
-EXPOSE 8000
+EXPOSE 80
 
 USER root
 
@@ -24,7 +24,8 @@ RUN apt-get update \
     && cp /app/php.ini /etc/php/7.4/cli/ \
     && cp /app/php.ini /etc/php/7.4/apache2/ \
     && apt-get install -y php-xml \
-    && mkdir /app/downloads
+    && mkdir /app/downloads \
+    && sed -i "s|Listen 80|Listen $PORT|g" /etc/apache2/ports.conf 
 
-CMD php -S 0.0.0.0:$PORT
+CMD apachectl start && tail -f /dev/null
 
