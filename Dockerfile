@@ -22,8 +22,8 @@ RUN apt-get update \
     && apt-get install -y unzip \
     && apt-get install -y php \
     && apt-get install -y php-xml \
-    && mkdir /var/www/html/downloads \
-    && sed -i "s|Listen 80|Listen $PORT|g" /etc/apache2/ports.conf 
+    && mkdir /var/www/html/downloads
+    
 
-CMD apachectl start && tail -f /dev/null
+CMD sed -i "s|Listen 80|Listen $PORT|g" /etc/apache2/ports.conf && apachectl start && tail -f /dev/null
 
