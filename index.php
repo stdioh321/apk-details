@@ -50,10 +50,18 @@
             border: solid rgb(240, 240, 240) 1px;
             border-radius: 5px;
             max-width: 100%;
+            min-width: 100%;
+            min-height: 40px;
+            background-image: url("/assets/images/image404.png");
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            background-position: center;
+
         }
 
         .v-select-item-wrapper .item-img {
             max-width: 50px;
+            min-width: 50px;
 
         }
 
@@ -80,11 +88,6 @@
 
 <body>
     <div id="app" class="container">
-        <div class="row">
-            <div class="col-md-12">
-                <img src="https://external-preview.redd.it/E0Bw5rRG3rgHzWnIi54v_pLfnkFskxWB0NtEyzxQNIw.png?auto=webp&s=2b40a771c681a5abf8e1329a04c3d5e1ca5e6ab9" class="img-fluid" alt="">
-            </div>
-        </div>
         <div class="row">
             <div class="col-md-8 offset-md-2">
                 <h1>Apk Details</h1>
@@ -129,9 +132,7 @@
                                 <template v-slot:option="option">
                                     <div class="v-select-item-wrapper">
                                         <div class="item-img">
-                                            <img :src="option.imgUrl || 'assets/images/image404.png'"
-                                            
-                                            alt="">
+                                            <img :src="option.imgUrl || 'assets/images/image404.png'" @error="$event.target.src = 'assets/images/image404.png'" alt="">
                                         </div>
                                         <div class="item-info pl-3">
                                             <strong>{{ option.name }}</strong>
