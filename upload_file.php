@@ -6,7 +6,7 @@ $apkFile = null;
 try {
     error_reporting(0);
     ini_set('display_errors', 0);
-
+    $apkName = null;
 
     if (isset($_GET['package'])) {
 
@@ -16,13 +16,14 @@ try {
         // $apkUrl = getApkUrlCombo($_GET['package']);
         // $apkUrl = $apkUrl ? $apkUrl : getApkUrl($_GET['package']);
         if ($apkUrl) {
-            $fileName = null;
+
             $tmpHeader = @get_headers($apkUrl['url'], 1);
             if ($tmpHeader && strpos($tmpHeader[0], '200')) {
                 preg_match("/filename=\"(.*)\"/i", $tmpHeader['Content-Disposition'], $fileName);
                 $fileName = count($fileName) > 0 ? $fileName[1] : null;
             }
             $fileName = $fileName && $fileName != "" ? $fileName : $_GET['package'];
+            $apkName = $fileName;
             $apkFile = __DIR__ . "/downloads/" . ($fileName);
             file_put_contents($apkFile, file_get_contents($apkUrl['url']));
         } else {
@@ -32,6 +33,7 @@ try {
         }
     } else if (isset($_FILES['apk'])) {
         $apkFile = $_FILES['apk']['tmp_name'];
+        $apkName = basename($apkFile);
     } else {
         unlink($apkFile);
         throw new Exception("Missing parameters", 400);
@@ -58,7 +60,7 @@ try {
                 if ($tmpApk) {
                     preg_match("/package: name=\'([\w\d\.]+)/i", shell_exec("aapt d badging " . $tmpApk), $tmp);
                     $tmpApk = isset($tmp[1]) ? $tmp[1] : null;
-                    $tmpApk = $tmpApk ? __DIR__ . "/downloads/tmp/" . $tmpApk . ".apk" : null;
+                    $tmpApk = $tmpApk ? __DIR__ . "/downloads/" . $tmpApk . ".apk" : null;
                     // print_r($tmpApk);
                     if (is_file($tmpApk)) {
                         $apkFile = $tmpApk;
@@ -173,7 +175,7 @@ try {
 
         $protocol = stripos($_SERVER['SERVER_PROTOCOL'], 'https') === 0 ? 'https://' : 'http://';
         $host = $protocol . $_SERVER['HTTP_HOST'] . '/downloads/decompiled/' . $apk['packageName'];
-        // $apk['urlDecompiled'] = $host;
+        $apk['apkName'] = $apkName;
         echo json_encode($apk);
 
         // $decompileCommand = "jadx -d $outZipPath $apkFile && zip -r $outZipPath" . "source.zip $outZipPath";
@@ -395,5 +397,4 @@ function execBackground($command = "")
 {
     $cmd = "$command >/dev/null 2>&1 &";
     return shell_exec($cmd);
-
 }

@@ -196,10 +196,27 @@
                         <p v-else-if="apkDetails.unityVersion === null">It's not a Unity App</p>
                         <p v-else>{{apkDetails.unityVersion}}</p>
                     </li>
-                    <li class="list-group-item" v-if="apkDetails.urlDecompiled">
-                        <h5>Url Decompiled</h5>
-                        <p>
-                            <a :href="apkDetails.urlDecompiled" target="_blank">{{apkDetails.urlDecompiled}}</a>
+                    <li class="list-group-item" v-if="apkDetails.apkName">
+                        <h5>Decompiled Apk</h5>
+                        <p v-if="!apkDetails.decompiledApkUrl">
+                            <button class="btn btn-success" @click="onDecompileApk(apkDetails.apkName)" :disabled="loadingDecompile">
+                                <template v-if="loadingDecompile">
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    Loading...
+                                </template>
+                                <template v-else>
+                                    Decompile ?
+                                </template>
+                            </button>
+                            <template v-if="errorMessageDecompile">
+                                <br>
+                                <div class="alert alert-danger">
+                                    {{errorMessageDecompile}}
+                                </div>
+                            </template>
+                        </p>
+                        <p v-else>
+                            <a :href="apkDetails.decompiledApkUrl" class="text-break" target="_blank">{{apkDetails.decompiledApkUrl}}</a>
                         </p>
                     </li>
                     <li class="list-group-item" v-if="apkDetails.unityTechnology">

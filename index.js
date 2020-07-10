@@ -13,10 +13,32 @@ var app = new Vue({
         strPackage: null,
         loadingPackage: false,
         appsOptions : [],
-        appSelected:null
+        appSelected:null,
+        loadingDecompile:false,
+        errorMessageDecompile:null
 
     },
     methods: {
+        onDecompileApk(apkName=""){
+            if(this.loadingDecompile == true) return;
+            this.errorMessageDecompile = null;
+            this.loadingDecompile = true;
+            axios.get("/decompile.php?file-name="+apkName)
+            .then(res=>{
+                if(this.apkDetails){
+                    this.apkDetails['decompiledApkUrl'] = res.data.url;
+                }                
+                this.loadingDecompile = false;
+            })
+            .catch(err=>{
+                if(err && err.response && err.response.status == 400){                
+                        this.errorMessageDecompile = err.response.data.message;                    
+                }else{
+                    this.errorMessageDecompile = "Server error";                    
+                }
+                this.loadingDecompile = false;
+            })
+        },
         onAppChange(e){
             // console.log(this.appSelected);
             
