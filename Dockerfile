@@ -28,8 +28,9 @@ RUN apt-get update \
     && apt-get install -y php-xml \
     && mkdir /var/www/html/downloads && mkdir /var/www/html/downloads/decompiled \
     && cd /var/www/html/ \
+    && apt-get install -y systemd \
     && sed -i "s|post_max_size = \([[:alnum:]]\+\)|post_max_size = 2048M|" /etc/php/7.4/apache2/php.ini \
-    && sed -i "s|memory_limit = \([[:alnum:]]\+\)|memory_limit = 450M|" /etc/php/7.4/apache2/php.ini \
+    && sed -i "s|memory_limit = \([[:alnum:]]\+\)|memory_limit = 2048M|" /etc/php/7.4/apache2/php.ini \
     && sed -i "s|upload_max_filesize = \([[:alnum:]]\+\)|upload_max_filesize = 2048M|" /etc/php/7.4/apache2/php.ini 
 
 CMD sed -i "s|Listen 80|Listen $PORT|g" /etc/apache2/ports.conf && apachectl start && tail -f /dev/null
