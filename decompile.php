@@ -11,7 +11,7 @@ try {
         if ($f) {
             $outPath = __DIR__ . "/downloads/decompiled/" . explode(".apk", $fName)[0];
             $fullFName = __DIR__ . "/downloads/$fName";
-            $decompileCommand = "jadx -d $outPath $fullFName && zip -r $outPath" . "/source.zip $outPath";
+            $decompileCommand = "ulimit -m 400; ulimit -v 400; jadx -d $outPath $fullFName && zip -r $outPath" . "/source.zip $outPath";
             exec($decompileCommand, $out, $ret);
             if ($ret == 0 && $out) {
                 $protocol = stripos($_SERVER['SERVER_PROTOCOL'], 'https') === 0 ? 'https://' : 'http://';

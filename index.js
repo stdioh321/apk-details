@@ -96,6 +96,7 @@ var app = new Vue({
             console.log(f);
             this.apkDetails = null;
             this.errorMessage = null;
+            this.errorMessageDecompile = null;
             axios.get('upload_file.php?package=' + tmpPackage, {
                     onUploadProgress: (progressEvent) => {
                         // console.log(progressEvent);

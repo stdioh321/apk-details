@@ -210,7 +210,7 @@
                             </button>
                             <template v-if="errorMessageDecompile">
                                 <br>
-                                <div class="alert alert-danger">
+                                <div class="alert alert-danger mt-2">
                                     {{errorMessageDecompile}}
                                 </div>
                             </template>
