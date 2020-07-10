@@ -26,7 +26,7 @@ RUN apt-get update \
     && git clone https://github.com/skylot/jadx.git /tmp/jadx/ && cd /tmp/jadx/  && gradle dist && ln -s /tmp/jadx/build/jadx/bin/jadx /usr/local/bin/jadx \
     && apt-get install -y php \
     && apt-get install -y php-xml \
-    && mkdir /var/www/html/downloads \
+    && mkdir /var/www/html/downloads && mkdir /var/www/html/downloads/decompiled \
     && cd /var/www/html/
     
 
