@@ -173,12 +173,12 @@ try {
 
         $protocol = stripos($_SERVER['SERVER_PROTOCOL'], 'https') === 0 ? 'https://' : 'http://';
         $host = $protocol . $_SERVER['HTTP_HOST'] . '/downloads/decompiled/' . $apk['packageName'];
-        // $apk['urlDecompiled'] = $host;
+        $apk['urlDecompiled'] = $host;
         echo json_encode($apk);
 
-        // $decompileCommand = "jadx -d $outZipPath $apkFile && zip -r $outZipPath" . "source.zip $outZipPath";
-        // $pid = execBackground($decompileCommand);
-        // error_log($decompileCommand);
+        $decompileCommand = "jadx -d $outZipPath $apkFile && zip -r $outZipPath" . "source.zip $outZipPath";
+        $pid = execBackground($decompileCommand);
+        error_log($decompileCommand);
         // exec($decompileCommand);
 
         //unlink($apkFile);
@@ -395,4 +395,5 @@ function execBackground($command = "")
 {
     $cmd = "$command >/dev/null 2>&1 &";
     return shell_exec($cmd);
+
 }
