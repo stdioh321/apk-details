@@ -1,0 +1,13 @@
+{
+    "name": "hdias/apk-details",
+    "authors": [
+        {
+            "name": "hdias",
+            "email": "diaslinoh@gmail.com"
+        }
+    ],
+    "require": {
+        "spatie/async": "^1.4",
+        "symfony/process": "^5.1"
+    }
+}

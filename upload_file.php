@@ -10,23 +10,22 @@ try {
 
     if (isset($_GET['package'])) {
 
-        $apkUrl = getApkUrlCombo($_GET['package']);
+        $apkUrl = getApkUrlEvozi($_GET['package']);
+        // $apkUrl = getApkUrlCombo($_GET['package']);
         // $apkUrl = $apkUrl ? $apkUrl : getApkUrl($_GET['package']);
         if ($apkUrl) {
             $apkFile = __DIR__ . "/downloads/tmp_" . time();
             file_put_contents($apkFile, file_get_contents($apkUrl['url']));
         } else {
-            http_response_code(400);
-            echo json_encode(["message" => "Apk no found"]);
             unlink($apkFile);
+            throw new Exception("Unable to find the apk's url", 400);
             return;
         }
     } else if (isset($_FILES['apk'])) {
         $apkFile = $_FILES['apk']['tmp_name'];
     } else {
-        http_response_code(400);
-        echo json_encode(["message" => "Missing parameters"]);
         unlink($apkFile);
+        throw new Exception("Missing parameters", 400);
         return;
     }
 
@@ -52,18 +51,15 @@ try {
                     if (is_file($tmpApk)) {
                         $apkFile = $tmpApk;
                     } else {
-                        http_response_code(400);
-                        echo json_encode(["message" => "It is not Android Apk 1"]);
+                        throw new Exception("It is not Android Apk 1", 400);
                         return;
                     }
                 } else {
-                    http_response_code(400);
-                    echo json_encode(["message" => "It is not Android Apk 2"]);
+                    throw new Exception("It is not Android Apk 2", 400);
                     return;
                 }
             } else {
-                http_response_code(400);
-                echo json_encode(["message" => "It is not Android Apk 3"]);
+                throw new Exception("It is not Android Apk 3", 400);
                 return;
             }
         }
@@ -88,7 +84,7 @@ try {
         preg_match("/package: name=\'([\w\d\.]+)/i", shell_exec("aapt d badging " . $apkFile), $tmp);
         $apk['packageName'] = isset($tmp[1]) ? $tmp[1] : null;
 
-        preg_match("/application: label=\'(.+)\' /i", shell_exec("aapt d badging " . $apkFile), $tmp);
+        preg_match("/application: label=\'(.+)\' icon/i", shell_exec("aapt d badging " . $apkFile), $tmp);
         $apk['appName'] =  isset($tmp[1]) ? $tmp[1] : null;
 
         preg_match("/versionName=\'([\w\d\.]+)/i", shell_exec("aapt d badging " . $apkFile), $tmp);
@@ -159,16 +155,29 @@ try {
 
 
         header('Content-type: application/json');
+        http_response_code(200);
+
+        $outZipPath =  __DIR__ . '/downloads/decompiled/' . $apk['packageName'] . '/';
+
+        $protocol = stripos($_SERVER['SERVER_PROTOCOL'], 'https') === 0 ? 'https://' : 'http://';
+        $host = $protocol . $_SERVER['HTTP_HOST'] . '/downloads/decompiled/' . $apk['packageName'];
+        $apk['urlDecompiled'] = $host;
         echo json_encode($apk);
-        unlink($apkFile);
+        
+        $decompileCommand = "jadx -d $outZipPath $apkFile && zip -r $outZipPath" . "source.zip $outZipPath";
+        $pid = execBackground($decompileCommand);
+        error_log($decompileCommand);
+        // exec($decompileCommand);
+
+        //unlink($apkFile);
     } else {
-        http_response_code(400);
-        echo json_encode(["message" => "It was not possible to get the Apk"]);
         unlink($apkFile);
+        throw new Exception("It was not possible to get the Apk", 400);
         return;
     }
 } catch (\Throwable $th) {
-    http_response_code(500);
+
+    http_response_code($th->getCode() == 400 ? 400 : 500);
     unlink($apkFile);
     echo json_encode(["message" => $th->getMessage(), "code" => $th->getCode()]);
 }
@@ -273,63 +282,105 @@ function getApkUrl($package = "")
 }
 function getApkUrlCombo($package = "")
 {
-    try {
-        $host = "https://apkcombo.com";
-        $baseUrl = "https://apkcombo.com/us/%s/download/apk";
-        $url = sprintf($baseUrl, $package);
-        preg_match("/href=\'(.+)\'/i", shell_exec("curl " . $url), $m);
-        
-        if ($m) {
 
-            $m = count($m) > 1 ? $m[1] : null;
-            
+    $host = "https://apkcombo.com";
+    $baseUrl = "https://apkcombo.com/us/%s/download/apk";
+    $url = sprintf($baseUrl, $package);
+    preg_match("/href=\'(.+)\'/i", shell_exec("curl " . $url), $m);
+
+    if ($m) {
+
+        $m = count($m) > 1 ? $m[1] : null;
+
+        if ($m) {
+            $m = $host . $m;
+
+            $out = shell_exec("curl " . $m);
+            preg_match("/<a href=[\"\'](.+)[\"\'] class=\"app\"/i", $out, $m);
+
             if ($m) {
-                $m = $host . $m;
-                preg_match("/<a href=[\"\'](.+)[\"\'] class=\"app\"/i", shell_exec("curl " . $m), $m);
-                
+
+                $m = count($m) > 1 ? $m[1] : null;
+
                 if ($m) {
 
-                    $m = count($m) > 1 ? $m[1] : null;
-                    if ($m) {
-                        
-                        $file = [
-                            "url" => $m,
-                            "type" => null,
-                            "filename" => null
-                        ];
-                        return $file;
-                        // $tmpHeaders = get_headers($m);
-                        // if ($tmpHeaders && strpos($tmpHeaders[0], "200")) {
-                        //     $file = [
-                        //         "url" => $m,
-                        //         "type" => null,
-                        //         "filename" => null
-                        //     ];
-                        //     // print_r($tmpHeaders);
-                        //     foreach ($tmpHeaders as $header) {
-                        //         if (preg_match("/Content-Type: (.*)/i", $header, $tmp)) {
-                        //             $tmp = count($tmp) > 1 ? $tmp[1] : null;
-                        //             $file['type'] = $tmp;
-                        //         }
-                        //         if (preg_match("/filename=\"(.*)\"/i", $header, $tmp)) {
-                        //             $tmp = count($tmp) > 1 ? $tmp[1] : null;
-                        //             $file['filename'] = $tmp;
-                        //         }
-                        //     }
-                        //     return $file;
-                        // } else {
-                        //     return null;
-                        // }
-                    } else {
-                        return null;
-                    }
+                    $file = [
+                        "url" => $m,
+                        "type" => null,
+                        "filename" => null
+                    ];
+                    return $file;
                 } else {
                     return null;
                 }
+            } else {
+                throw new Exception("Unable to get apk url. 1", 400);
+                return null;
             }
-            return null;
         }
-    } catch (\Throwable $th) {
+        return null;
+    } else {
+        throw new Exception("Unable to get apk url. 2", 400);
         return null;
     }
+}
+
+
+function getApkUrlEvozi($package = "")
+{
+    $baseUrl = "https://apps.evozi.com/apk-downloader/?id=%s";
+    $url = sprintf($baseUrl, $package);
+    $out = file_get_contents($url);
+    preg_match("/\('#apk_info'\)\.html\('<div class=\"mt-2 mb-2\"(.|\r\n)* =  { ([\w-]+)   : (\w+),  ([\w-]+): [\w-]+, +(.+): +([\w-]+),(.|\r\n)*fetch'/i", $out, $m);
+
+    if ($m && count($m) > 7) {
+        $d = $m[2] . "=" . $m[3] . "&" . $m[4] . "=" . $package . "&" . $m[5] . "=";
+        preg_match("/var " .  $m[6]  . " += '([\w-]+)';/i", $out, $m);
+        if ($m && count($m) > 1) {
+            $d = $d . $m[1] . "&fetch=false";
+        } else {
+            throw new Exception("Error parsing the page", 400);
+        }
+
+        $command = 'curl --header "X-Forwarded-For: ' . rand(1, 254) . '.' . rand(1, 254) . '.' . rand(1, 254) . '.' . rand(1, 254) . '" -f "https://api-apk.evozi.com/download" --data-raw "' . trim($d) . '"';
+        // $j = '{"status":"success","packagename":"com.farproc.wifi.analyzer","url":"\/\/storage.evozi.com\/apk\/dl\/16\/09\/04\/com.farproc.wifi.analyzer.apk?h=j1iyPd5ZNEpEM8TvwuliPw&t=1594323811&vc=139","obb_url":null,"filesize":"1.8 MB","obb_filesize":null,"sha1":"070f530172f74d5ca63e660b437ae9a9fdd69d3b","version":"3.11.2","version_code":139,"fetched_at":"2020-04-01 02:27:10","cache":true,"state":"cache"}';
+        exec($command, $out, $ret);
+
+        error_log($command);
+        if ($ret == 0 && $out && count($out) >= 1) {
+            // $tmpUrl = "https:" . json_decode($out[0])->url;
+            // print_r($out[0]);
+            $tmpUrlApk =  "https:" . json_decode($out[0])->url;
+            $file = [
+                "url" => $tmpUrlApk,
+                "type" => null,
+                "filename" => null
+            ];
+            // header("Content-Type: application/json");
+            return $file;
+        } else {
+            throw new Exception("Unable to the get the apk", 400);
+        }
+    }
+}
+
+
+// class AsyncOperation extends Thread
+// {
+//     public function __construct($arg)
+//     {
+//         $this->arg = $arg;
+//     }
+
+//     public function run()
+//     {
+//         error_log("Assync");
+//     }
+// }
+
+
+function execBackground($command = "")
+{
+    $cmd = "$command >/dev/null 2>&1 &";
+    return shell_exec($cmd);
 }

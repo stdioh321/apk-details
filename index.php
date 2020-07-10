@@ -196,6 +196,12 @@
                         <p v-else-if="apkDetails.unityVersion === null">It's not a Unity App</p>
                         <p v-else>{{apkDetails.unityVersion}}</p>
                     </li>
+                    <li class="list-group-item" v-if="apkDetails.urlDecompiled">
+                        <h5>Url Decompiled</h5>
+                        <p>
+                            <a :href="apkDetails.urlDecompiled" target="_blank">{{apkDetails.urlDecompiled}}</a>
+                        </p>
+                    </li>
                     <li class="list-group-item" v-if="apkDetails.unityTechnology">
                         <h5>Unity Technology</h5>
                         <p>{{apkDetails.unityTechnology}}</p>

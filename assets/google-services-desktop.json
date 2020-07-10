@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "398476909282",
+    "firebase_url": "https://da3-global-15170533.firebaseio.com",
+    "project_id": "da3-global-15170533",
+    "storage_bucket": "da3-global-15170533.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:398476909282:android:227a3dcf926f13ca",
+        "android_client_info": {
+          "package_name": "com.nexon.da3.global"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "398476909282-9dv1bc6bg11snh65dd0agrrl3p4rpf6l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nexon.da3.global",
+            "certificate_hash": "e6d7abfc1081b8e08910c2e1f108225b0b6b97f4"
+          }
+        },
+        {
+          "client_id": "398476909282-mkb8gurlps5kfh0626naeomloch0pnlr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQ_Rge0wKG1Jftoxlniws3Jz47UvDdh0Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "398476909282-mkb8gurlps5kfh0626naeomloch0pnlr.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "398476909282-79sq4lbatcv0pt1frkp3u1m5d5ucgo5u.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.nexon.da3.global"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
