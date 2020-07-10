@@ -11,11 +11,19 @@ try {
     if (isset($_GET['package'])) {
 
         $apkUrl = getApkUrlEvozi($_GET['package']);
+
         // print_r($apkUrl);
         // $apkUrl = getApkUrlCombo($_GET['package']);
         // $apkUrl = $apkUrl ? $apkUrl : getApkUrl($_GET['package']);
         if ($apkUrl) {
-            $apkFile = __DIR__ . "/downloads/tmp_" . time();
+            $fileName = null;
+            $tmpHeader = @get_headers($apkUrl['url'], 1);
+            if ($tmpHeader && strpos($tmpHeader[0], '200')) {
+                preg_match("/filename=\"(.*)\"/i", $tmpHeader['Content-Disposition'], $fileName);
+                $fileName = count($fileName) > 0 ? $fileName[1] : null;
+            }
+            $fileName = $fileName && $fileName != "" ? $fileName : $_GET['package'];
+            $apkFile = __DIR__ . "/downloads/" . ($fileName);
             file_put_contents($apkFile, file_get_contents($apkUrl['url']));
         } else {
             unlink($apkFile);
@@ -114,7 +122,7 @@ try {
         $currIcon =  (count($tmp) > 1 && count($tmp[1]) > 0) ? $tmp[1][count($tmp[1]) - 1]  : null;
         if ($currIcon) {
             shell_exec("unzip -jo " . $apkFile . " " . $currIcon);
-            error_log($currIcon);
+            // error_log($currIcon);
             $tmpImage = file_get_contents(__DIR__ . "/app_icon.png");
 
             $apk['appIcon'] = "data:image/png;base64," . base64_encode($tmpImage);
@@ -350,7 +358,7 @@ function getApkUrlEvozi($package = "")
         // $j = '{"status":"success","packagename":"com.farproc.wifi.analyzer","url":"\/\/storage.evozi.com\/apk\/dl\/16\/09\/04\/com.farproc.wifi.analyzer.apk?h=j1iyPd5ZNEpEM8TvwuliPw&t=1594323811&vc=139","obb_url":null,"filesize":"1.8 MB","obb_filesize":null,"sha1":"070f530172f74d5ca63e660b437ae9a9fdd69d3b","version":"3.11.2","version_code":139,"fetched_at":"2020-04-01 02:27:10","cache":true,"state":"cache"}';
         exec($command, $out, $ret);
 
-        error_log($command);
+        // error_log($command);
         if ($ret == 0 && $out && count($out) >= 1 && json_decode($out[0])->status != "error") {
             // $tmpUrl = "https:" . json_decode($out[0])->url;
 
