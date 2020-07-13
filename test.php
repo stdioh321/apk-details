@@ -1,4 +1,14 @@
 <?php
-$protocol = stripos($_SERVER['SERVER_PROTOCOL'], 'https') === 0 ? 'https://' : 'http://';
 
-print_r($protocol . $_SERVER['HTTP_HOST'] . '/downloads/decompile/');
+$ip = "Not Found";
+if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+    $ip = $_SERVER['HTTP_CLIENT_IP'];
+} elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+    $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+} else {
+    $ip = $_SERVER['REMOTE_ADDR'];
+}
+
+header("Content-Type: application/json");
+$_SERVER['IP_REAL'] = $ip;
+echo json_encode($_SERVER);

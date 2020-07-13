@@ -1,4 +1,6 @@
 <?php
+ header("Access-Control-Allow-Origin: https://javascript.info");
+
 try {
     if (!isset($_GET["q"])) {
         http_response_code(400);
